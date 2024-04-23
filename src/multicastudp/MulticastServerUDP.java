@@ -39,33 +39,47 @@ public class MulticastServerUDP {
         try {
 
             System.out.println(ANSI_BLUE + "SERVER UDP" + RESET);
-            //1) SERVER IN ASCOLTO 
-            //si crea il socket e si associa alla porta specifica
+            //1. INIZIALIZZAZIONE DEL SERVER 
+            //si crea il socket e si associa alla porta specifica dove la comunicazione avverrà
             dSocket = new DatagramSocket(port);
             System.out.println(GREEN_UNDERLINED + "Apertura porta in corso!" + RESET);
             System.out.println(GREEN_UNDERLINED + "Apertura porta Effettuata, Attendo connessioni!" + RESET);
 
             while (true) {
-                //si prepara il buffer per il messaggio da ricevere
+                //si prepara il buffer, ovvero l'array di byte, per ricevere i dati da parte dei client
                 inBuffer = new byte[256];
 
                 //2) RICEZIONE MESSAGGIO DEL CLIENT
-                //si crea un datagramma UDP in cui trasportare il buffer per tutta la sua lunghezza
+                //viene creato un datagramma UDP per salvare e trasportare il buffer con le informazioni del client
                 inPacket = new DatagramPacket(inBuffer, inBuffer.length);
-                //attesa del pacchetto da parte del client
+                //si attende l'arrivo di una richiesta da parte dei client
                 dSocket.receive(inPacket);
 
-                //si recupera l'indirizzo IP e la porta UDP del client
+                /*
+                partendo dal pacchetto ricevuto da parte dei cliente,si recuperano:
+                    - Indirizzo IP
+                    - numero di porta
+                */
                 InetAddress clientAddress = inPacket.getAddress();
                 int clientPort = inPacket.getPort();
 
-                //si stampa a video il messaggio ricevuto dal client
+                /*  
+                creando una nuova stringa, otteniamo una stringa inserendo
+                tra i parametri sia il payload che la lunghezza del messaggio ricevuto
+                */
                 messageIn = new String(inPacket.getData(), 0, inPacket.getLength());
+                
+                //stampiamo il contenuto del messaggio ricevuto dal client
                 System.out.println(RED_BOLD + "Messaggio ricevuto dal client " + clientAddress
                         + ":" + clientPort + "\n\t" + messageIn + RESET);
 
                 //3)RISPOSTA AL CLIENT
-                //si prepara il datagramma con i dati da inviare
+                /*si prepara il datagramma da inviare al client, costituito da:
+                    - payload
+                    - lunghezza del payload
+                    - IP del client
+                    - porta del client
+                */
                 messageOut = "Ricevuta richiesta!";
                 outPacket = new DatagramPacket(messageOut.getBytes(), messageOut.length(), clientAddress, clientPort);
 
@@ -74,7 +88,7 @@ public class MulticastServerUDP {
                 System.out.println(ANSI_BLUE + "Spedito messaggio al client: " + messageOut + RESET);
 
                 //4)INVIO MESSAGGIO AL GRUPPO DOPO UNA SOSPENSIONE 
-                //si recupera l'IP gruppo
+                //si recupera l'IP gruppo attraverso il metodo getByName
                 groupAddress = InetAddress.getByName("239.255.255.250");
                 //si inizializza la porta del gruppo
                 int groupPort = 1900;
